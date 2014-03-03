@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <arduino.h>
+
 
 #define EN1A 9
 #define M1A  8
@@ -39,8 +39,6 @@ struct return_data
     
 uint32_t forward(current *curr)
   {
-      uint32_t _c1 = 1;
-      uint32_t _c2 = 1;
       digitalWrite(M1A,HIGH); //right wheel channel 1
       digitalWrite(M1B,HIGH); //right wheel channel 2
       digitalWrite(EN1A,HIGH); //right enable channel 1
@@ -49,29 +47,26 @@ uint32_t forward(current *curr)
       digitalWrite(M2B,LOW);   //left wheel channel 2
       digitalWrite(EN2A,HIGH); //left enable channel 1
       digitalWrite(EN2B,HIGH); //left enable channel 2
-      curr -> analogRead(C1) = _c1;
-      curr -> analogRead(C2) = _c2; // check current for both wheels
+      curr -> c_1 = analogRead(C1);
+      curr -> c_2 = analogRead(C2); // check current for both wheels
       return (0);
   }
  
 uint32_t stop(current *curr)
   {
-      uint32_t _c1 = 1;
-      uint32_t _c2 = 1; 
+
       digitalWrite(EN1A,LOW);  //brake -roll-to-stop
       digitalWrite(EN1B,LOW); //brake  -roll-to-stop right
       digitalWrite(EN2A,LOW);  //brake -roll-to-stop left
       digitalWrite(EN2B,LOW); //brake  -roll-to-stop left
-      curr -> analogRead(C1) = _c1;
-      curr -> analogRead(C2) = _c2; // check current for both wheels
+      curr -> c_1 = analogRead(C1);
+      curr -> c_2 = analogRead(C2); // check current for both wheels
       return (0);
   }
   
   
 uint32_t reverse(current *curr)
   {
-      uint32_t _c1 = 1;
-      uint32_t _c2 = 1; 
 
     digitalWrite(M1A,LOW); //right wheel channel 1
     digitalWrite(M1B,LOW); //right wheel channel 2
@@ -83,8 +78,8 @@ uint32_t reverse(current *curr)
     digitalWrite(EN2B,HIGH); //left enable channel 2
     Serial.println(analogRead(C1)); // check current for right wheel
     Serial.println(analogRead(C2)); // check current for left  wheel
-    curr -> analogRead(C1) = _c1;
-    curr -> analogRead(C2) = _c2; // check current for both wheels
+    curr -> c_1 = analogRead(C1);
+    curr -> c_2 = analogRead(C2); // check current for both wheels
     return (0);
 }
 
