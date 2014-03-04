@@ -12,6 +12,47 @@
 #define C1 A0
 #define C2 A1
 
+
+static const uint8_t enable(){
+      digitalWrite(EN1A,HIGH);
+      digitalWrite(EN1B,HIGH);
+      digitalWrite(EN2A,HIGH);
+      digitalWrite(EN2B,HIGH);
+}
+
+static const uint8_t thrust(char* dir){
+      if(dir=="fwd"){
+        digitalWrite(M1A,HIGH);
+        digitalWrite(M1B,HIGH);
+        digitalWrite(M2A,LOW);
+        digitalWrite(M2B,LOW);
+        }
+      if(dir=="rvs"){
+        digitalWrite(M1A,LOW);
+        digitalWrite(M1B,LOW);
+        digitalWrite(M2A,HIGH);
+        digitalWrite(M2B,HIGH);
+        }        
+      if(dir=="rgt"){
+        digitalWrite(M1A,LOW);
+        digitalWrite(M1B,LOW);
+        digitalWrite(M2A,LOW);
+        digitalWrite(M2B,LOW);
+        }      
+      if(dir=="lft"){
+        digitalWrite(M1A,HIGH);
+        digitalWrite(M1B,HIGH);
+        digitalWrite(M2A,HIGH);
+        digitalWrite(M2B,HIGH); 
+        }
+      if(dir=="stp"){    
+        digitalWrite(EN1A,LOW);  //brake -roll-to-stop
+        digitalWrite(EN1B,LOW); //brake  -roll-to-stop right
+        digitalWrite(EN2A,LOW);  //brake -roll-to-stop left
+        digitalWrite(EN2B,LOW); //brake  -roll-to-stop left
+        } 
+}  
+      
 void setup()
 {
 
@@ -27,63 +68,66 @@ void setup()
     Serial.begin(9600);
 }
 
-typedef struct return_data current;
 
-struct return_data
+struct ret
     {
-    uint32_t c_1;  //current one
-    uint32_t c_2;  //current two
+    
+    uint8_t c_1;  //current one
+    uint8_t c_2;  //current two
     //quadrature encoder data can come in here
     //accelerometer data?
     };
-    
-uint32_t forward(current *curr)
+static struct ret *fwd_val;
+static struct ret *stp_val;
+static struct ret *rvs_val;
+
+uint8_t forward()
   {
-      digitalWrite(M1A,HIGH); //right wheel channel 1
-      digitalWrite(M1B,HIGH); //right wheel channel 2
-      digitalWrite(EN1A,HIGH); //right enable channel 1
-      digitalWrite(EN1B,HIGH); //right enable channel 2
-      digitalWrite(M2A,LOW);   //left wheel channel 1
-      digitalWrite(M2B,LOW);   //left wheel channel 2
-      digitalWrite(EN2A,HIGH); //left enable channel 1
-      digitalWrite(EN2B,HIGH); //left enable channel 2
-      curr -> c_1 = analogRead(C1);
-      curr -> c_2 = analogRead(C2); // check current for both wheels
+      enable();
+      thrust("fwd");
+      struct ret ret_val;
+      fwd_val = &ret_val;
+
+      fwd_val->c_1 = analogRead(C1);
+      fwd_val->c_2 = analogRead(C2); // check current for both wheels
+  
       return (0);
   }
  
-uint32_t stop(current *curr)
+uint8_t stop()
   {
-
-      digitalWrite(EN1A,LOW);  //brake -roll-to-stop
-      digitalWrite(EN1B,LOW); //brake  -roll-to-stop right
-      digitalWrite(EN2A,LOW);  //brake -roll-to-stop left
-      digitalWrite(EN2B,LOW); //brake  -roll-to-stop left
-      curr -> c_1 = analogRead(C1);
-      curr -> c_2 = analogRead(C2); // check current for both wheels
+       
+      struct ret ret_val;
+      stp_val = &ret_val;
+      enable();
+      thrust("stp");
+      
+      stp_val->c_1 = analogRead(C1);
+      stp_val->c_2 = analogRead(C2); // check current for both wheels
       return (0);
   }
   
   
-uint32_t reverse(current *curr)
+uint8_t reverse()
   {
-
-    digitalWrite(M1A,LOW); //right wheel channel 1
-    digitalWrite(M1B,LOW); //right wheel channel 2
-    digitalWrite(EN1A,HIGH); //right enable channel 1
-    digitalWrite(EN1B,HIGH); //right enable channel 2
-    digitalWrite(M2A,HIGH);   //left wheel channel 1
-    digitalWrite(M2B,HIGH);   //left wheel channel 2
-    digitalWrite(EN2A,HIGH); //left enable channel 1
-    digitalWrite(EN2B,HIGH); //left enable channel 2
-    Serial.println(analogRead(C1)); // check current for right wheel
-    Serial.println(analogRead(C2)); // check current for left  wheel
-    curr -> c_1 = analogRead(C1);
-    curr -> c_2 = analogRead(C2); // check current for both wheels
-    return (0);
+      struct ret ret_val;
+      rvs_val = &ret_val;
+      //right wheel channel 1
+      enable();
+      thrust("rvs");
+      
+      rvs_val->c_1 = analogRead(C1);
+      rvs_val->c_2 = analogRead(C2); // check current for both wheels
+      return (0);
 }
-
 
 void loop()
 {
+    
+    forward();
+      Serial.print("C_2 ");
+      Serial.print(fwd_val->c_1);
+      Serial.print("C_1");
+      Serial.print(fwd_val->c_2);  
+
 }
